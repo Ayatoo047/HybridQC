@@ -497,21 +497,20 @@ def hybridity(filename, saveas, min_missing_percentage=20, min_perc_polymorphic=
 if __name__ == "__main__":
     # print(len(sys.argv))
     if len(sys.argv) not in [3, 6]:
-        print("""You need to specify all the arguments
-        See Guideline Below
-        first argument -- the file you want to analyse
-        second argument -- where you want the file to be saved with file name
-        third argument -- the maximum missing percentage acceptable
-        forth argument -- the minimum polymorphic percentage acceptable
-        fifth argument -- the minimum hybridity percentage acceptable
-        You may specify just two arguments if you want to use the default thresholds that is %missing = 20, %polymorphic=20 and %hybridity=50
-        See the github repo for more understanding
-        
-        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx"    (using default thresholds)
-        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx" 30 40 40   (using costume thresholds)
-        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx" None None 40   (using costume thresholds)
-        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx" 10 None 40   (using costume thresholds)
-              """)
+        print(
+            """You need to specify all the arguments
+            See Guideline Below
+            first argument -- the file you want to analyse
+            second argument -- where you want the file to be saved with file name
+            third argument -- the maximum missing percentage acceptable
+            forth argument -- the minimum polymorphic percentage acceptable
+            fifth argument -- the minimum hybridity percentage acceptable
+            You may specify just two arguments if you want to use the default thresholds that is %missing = 20, %polymorphic=20 and %hybridity=50
+            
+            See the github repo for more understanding
+            """
+        )
+
         sys.exit(1)
     else:
         number_of_arg = len(sys.argv)
