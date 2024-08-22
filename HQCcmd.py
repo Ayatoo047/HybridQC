@@ -1,7 +1,10 @@
+import sys
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.chart import PieChart, BarChart, Reference, label
 import time
+
+number_of_arg = 0
 
     
 def calc_perc_polymorphic(polymorphic, no_markers, no_missing):
@@ -296,9 +299,9 @@ def hybridity(filename, saveas, min_missing_percentage=20, min_perc_polymorphic=
             try:
                 percent_outcross = calc_perc_outcross(no_outcross, no_parent_polymophic, missiing)
             except ZeroDivisionError:
+                print(no_outcross, no_parent_polymophic, missiing)
                 print('=========>', value2[i].coordinate)
                 percent_outcross = 0
-            
             
 
             #color
@@ -490,3 +493,38 @@ def hybridity(filename, saveas, min_missing_percentage=20, min_perc_polymorphic=
     # stop = time.time()
     # print(stop-start)
     
+
+if __name__ == "__main__":
+    # print(len(sys.argv))
+    if len(sys.argv) not in [3, 6]:
+        print("""You need to specify all the arguments
+        See Guideline Below
+        first argument -- the file you want to analyse
+        second argument -- where you want the file to be saved with file name
+        third argument -- the maximum missing percentage acceptable
+        forth argument -- the minimum polymorphic percentage acceptable
+        fifth argument -- the minimum hybridity percentage acceptable
+        You may specify just two arguments if you want to use the default thresholds that is %missing = 20, %polymorphic=20 and %hybridity=50
+        See the github repo for more understanding
+        
+        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx"    (using default thresholds)
+        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx" 30 40 40   (using costume thresholds)
+        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx" None None 40   (using costume thresholds)
+        python HQCcmd.py "C:\Users\HP\Documents\input.xlsx" "C:\Users\HP\Documents\output.xlsx" 10 None 40   (using costume thresholds)
+              """)
+        sys.exit(1)
+    else:
+        number_of_arg = len(sys.argv)
+
+
+if number_of_arg >= 3:
+    filename = str(sys.argv[1])
+    saveas = str(sys.argv[2])
+    hybridity(filename, saveas)
+if number_of_arg == 6:
+    min_missing_percentage = int(sys.argv[3]) if sys.argv[3] is None else 20
+    min_perc_polymorphic = int(sys.argv[4]) if sys.argv[4] is None else 20
+    min_perc_hybridity = int(sys.argv[5]) if sys.argv[5] is None else 50
+    hybridity(filename, saveas, min_missing_percentage, min_perc_polymorphic, min_perc_hybridity)
+
+        

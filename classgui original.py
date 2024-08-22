@@ -11,7 +11,6 @@ import win32event
 import win32api
 import winerror
 from PIL import ImageTk, Image
-from class_hybridity import HybridQC
 
 LOCK_FILE_PATH = "my_application.lock"
 # import pyglet

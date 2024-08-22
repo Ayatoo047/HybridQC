@@ -21,8 +21,12 @@ class CalculationLogics():
 
 
 class HybridQC:
-    def __init__(self, filename : str):
+    def __init__(self, filename : str, saveas, min_missing_percentage=20, min_perc_polymorphic=20, min_perc_hybridity=50):
         self.file = filename
+        self.min_missing_percentage= min_missing_percentage
+        self.min_perc_polymorphic= min_perc_polymorphic
+        self.min_perc_hybridity= min_perc_hybridity
+        self.saveas = saveas
         self.green = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
         self.blue = PatternFill(start_color="007BFF", end_color="007BFF", fill_type="solid")
         self.red = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
@@ -85,7 +89,6 @@ class HybridQC:
         self.createBarChart()
         self.save("done"+self.file)
         
-        
     def checkPolymorphicParent(self):
         for k, (value, value2) in enumerate(zip(self.sheet.iter_rows(min_row=2, max_row=self.sheet.max_row),
                                                 self.sheet.iter_rows(min_row=3, max_row=self.sheet.max_row)), 1):
@@ -146,7 +149,7 @@ class HybridQC:
                 self.setPolymorphicHybridityValues()
                 self.colorParentGrey()
                 # print("checking D3:", self.sheet["D3"].value)
-        print("Checking parents done")
+        # print("Checking parents done")
     
     def set_polymorphic_columns(self,):
         curr_parent =  self.curr_parent
@@ -158,8 +161,8 @@ class HybridQC:
         perc_poly =  (self.parent_polymophic/int(self.no_markers)) * 100
         curr_parent[self.perc_polymorphic_col].value = perc_poly
         next_parent[self.perc_polymorphic_col].value = perc_poly
-        print("fisrt: ",perc_poly, curr_parent[self.perc_polymorphic_col].coordinate)
-        print(next_parent[self.perc_polymorphic_col].value)
+        # print("fisrt: ",perc_poly, curr_parent[self.perc_polymorphic_col].coordinate)
+        # print(next_parent[self.perc_polymorphic_col].value)
 
     def set_heterozygote_columns(self):
         curr_parent =  self.curr_parent
@@ -189,7 +192,7 @@ class HybridQC:
         outcross = self.no_outcross
         polymorphic = self.parent_polymophic
         no_missing = self.missiing
-        return (int(outcross)/int(polymorphic) - int(no_missing)) * 100
+        return (int(outcross)/(int(polymorphic) - int(no_missing))) * 100
 
     def perc_hybridity(self,):
         true = self.true
@@ -210,8 +213,7 @@ class HybridQC:
             percentage_missing = 0
             
         return percentage_missing
-
-    
+ 
     def setPolymorphicHybridityValues(self):
         self.set_heterozygote_columns()
         self.set_polymorphic_columns()
@@ -288,7 +290,6 @@ class HybridQC:
                 self.true = 0
                 
                 if (value[self.parent_col].value == 'Parent' and value2[self.parent_col].value == 'F1'):
-                    print(value[self.perc_polymorphic_col].value, value[self.perc_polymorphic_col].coordinate)
                     self.percent_polymorph = int(value[self.perc_polymorphic_col].value)
                     self.parent_polymophic = int(value[self.polymophic_col].value)
                     self.track_parent_on_F1 += 1
@@ -325,7 +326,7 @@ class HybridQC:
             if self.next_parent[self.hybridity_col].value is None:
                 percent_hybridity = self.perc_hybridity()
                         
-                if percent_hybridity <= self.next_parent[self.perc_missing_col].value and self.next_parent[self.status_col].value is None:
+                if percent_hybridity < self.min_perc_hybridity and self.next_parent[self.status_col].value is None:
                     if self.perc_het > self.max_perc_het:
                         self.undefined_parent_het += 1
                         
@@ -354,10 +355,6 @@ class HybridQC:
             self.next_parent[self.hybridity_col].value = 'NA'
 
     def setUndetermineF1(self):
-        self.min_perc_polymorphic = 20
-        self.min_missing_percentage = 20
-
-
         if (self.percent_polymorph <= self.min_perc_polymorphic):
             self.next_parent[self.hybridity_col].value = 'NA'
             self.next_parent[self.status_col].value = 'Undetermine: Parent not polymorphic'
@@ -403,7 +400,8 @@ class HybridQC:
         try:
             next_parent[self.perc_outcrossing_col].value = self.calc_perc_outcross()
         except ZeroDivisionError:
-            next_parent[self.perc_outcrossing_col].value = 'NA'
+            next_parent[self.perc_outcrossing_col].value = 0
+            # next_parent[self.perc_outcrossing_col].value = 'NA'
 
     def determineF1hybridity(self):
         orange = self.orange
@@ -414,19 +412,19 @@ class HybridQC:
         # print(next_parent)
         
         for i in range(self.marker_start_col, self.sheet.max_column):
-            test_skip = f"parent{self.track_parent_on_F1}{curr_parent[i].column_letter}"
+            self.test_skip = f"parent{self.track_parent_on_F1}{curr_parent[i].column_letter}"
 
-            self.dict_skip.get(test_skip)
+            self.dict_skip.get(self.test_skip)
 
             "Using dictionary"
-            if next_parent[i].value not in ['G:G', 'A:A', 'C:C', 'T:T', 'Uncallable', '?',] and next_parent[i].value == self.dict_skip.get(test_skip):
+            if next_parent[i].value not in ['G:G', 'A:A', 'C:C', 'T:T', 'Uncallable', '?',] and next_parent[i].value in self.dict_skip.get(self.test_skip):
                 next_parent[i].fill = orange
                 self.true += 1
             else:
-                if next_parent[i].value in ['Uncallable', '?'] and self.dict_skip.get(test_skip) not in ['Skip']:
+                if next_parent[i].value in ['Uncallable', '?'] and self.dict_skip.get(self.test_skip) not in ['Skip']:
                     self.missiing += 1
                         
-                elif next_parent[i].value not in ['G:G', 'A:A', 'C:C', 'T:T', self.dict_skip.get(test_skip)] and self.dict_skip.get(test_skip) not in ['Skip', None]:
+                elif next_parent[i].value not in ['G:G', 'A:A', 'C:C', 'T:T', self.dict_skip.get(self.test_skip)] and self.dict_skip.get(self.test_skip) not in ['Skip', None]:
                     next_parent[i].fill = pink
                     self.no_outcross += 1
 
@@ -519,8 +517,6 @@ class HybridQC:
 
         
         chartSheet.add_chart(pie_chart, "H8")
-        
-        
     def createBarChart(self):
         wb = self.wb
         barData = [
@@ -550,6 +546,7 @@ class HybridQC:
         
     def save(self, saveas):
         self.wb.save(saveas)
-        
-hybrid = HybridQC("1000 F1 + parent + 22SNPS.xlsx")
-hybrid.start()
+
+if __name__ == "main":
+    hybrid = HybridQC("1000 F1 + parent + 22SNPS.xlsx")
+    hybrid.start()

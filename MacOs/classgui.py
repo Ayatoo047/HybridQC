@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter import filedialog
 #sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(sys.executable))
+# from class_hybridity import HybridQC
 import hybridity_logics as hybridity
 import threading
 from tkinter import ttk
@@ -585,6 +586,8 @@ class MainWindow():
 
             savepath = self.saveas()
             if savepath is not None:
+                filename = self.fileEntry.get()
+                # hybrid = HybridQC(filename=filename)
                 hybridity_thread = threading.Thread(
                     target=hybridity.hybridity,
                     args=[self.fileEntry.get(), savepath, self.log, int(perc_missing), int(perc_poly), int(perc_hybrid)]

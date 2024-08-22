@@ -248,11 +248,14 @@ class MainWindow():
 
             savepath = self.saveas()
             if savepath is not None:
-                hybrid = HybridQC(filename = self.fileEntry.get())
+                hybrid = HybridQC(filename = self.fileEntry.get(),
+                                  saveas=savepath,
+                                  min_missing_percentage=int(perc_missing),
+                                  min_perc_polymorphic=int(perc_poly),
+                                  min_perc_hybridity=int(perc_hybrid))
                 
                 hybridity_thread = threading.Thread(
-                    target=hybridity.hybridity,
-                    args=[self.fileEntry.get(), savepath, self.log, int(perc_missing), int(perc_poly), int(perc_hybrid)]
+                    target=hybrid.start()
                 )
 
                 self.pb.start()  # Start the progress bar before starting the thread
